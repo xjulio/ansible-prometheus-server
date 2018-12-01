@@ -1,0 +1,1 @@
+sudo yum install wget -y && sudo wget -q https://raw.githubusercontent.com/xjulio/mb-demo-application/master/Dockerfile -O /tmp/TESTE

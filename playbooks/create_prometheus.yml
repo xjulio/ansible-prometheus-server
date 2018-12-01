@@ -1,0 +1,42 @@
+- name: Create an instance
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  vars:
+      gcp_project: mb-demo-224014
+      gcp_cred_kind: serviceaccount
+      gcp_cred_file: /Users/xjulio/gcloud-cred-ansible.json
+      service_email: "ansible@mb-demo-224014.iam.gserviceaccount.com"
+      zone: "us-central1-a"
+      region: "us-central1"
+      startup_script_content: "{{ lookup('file', '../scripts/startup_script.sh') }}"
+      ssh_key_content: "{{ lookup('file', '../keys/xjulio.pkey') }}"
+
+  tasks:
+   - name: create external IP
+     gce_eip:
+        service_account_email: "{{ service_email }}"
+        credentials_file: "{{ gcp_cred_file }}"
+        project_id: "{{ gcp_project }}"
+        name: prometheus-ip
+        region: "{{ region }}"
+        state: present
+     register: external_ip
+   
+   - debug:
+       msg: "External IP: {{ external_ip }}"  
+  
+   - name: create a instance
+     gce:
+         zone: "{{ zone }}"
+         project_id: "{{ gcp_project }}"
+         service_account_email: "{{ service_email }}"
+         credentials_file: "{{ gcp_cred_file }}"
+         instance_names: centos-prometheus-server
+         machine_type: n1-standard-1
+         image: centos-7
+         disk_size: 10
+         external_ip: "{{ external_ip.address }}"
+         metadata : '{ "startup-script" : "{{ startup_script_content }}", "sshKeys":"xjulio:{{ ssh_key_content }}" }'
+         state: present
+
