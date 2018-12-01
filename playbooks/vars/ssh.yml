@@ -1,0 +1,1 @@
+ssh_key_content: "{{ lookup('file', '../keys/ansible_rsa.pub') }}"

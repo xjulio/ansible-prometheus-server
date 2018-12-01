@@ -10,9 +10,21 @@
       zone: "us-central1-a"
       region: "us-central1"
       startup_script_content: "{{ lookup('file', '../scripts/startup_script.sh') }}"
-      ssh_key_content: "{{ lookup('file', '../keys/xjulio.pkey') }}"
 
   tasks:
+   - name: Generate SSH keys
+     shell: ssh-keygen -t rsa -N "" -f ../keys/ansible_rsa -C ansible
+     args:
+       creates: ../keys/ansible_rsa
+       
+   - name: Include vars of stuff.yaml into the 'stuff' variable (2.2).
+     include_vars:
+       file: ../vars/ssh.yml
+       name: ssh_vars
+    
+   - debug:
+        msg: "{{ ssh_vars.ssh_key_content }}"  
+   
    - name: create external IP
      gce_eip:
         service_account_email: "{{ service_email }}"
@@ -37,6 +49,6 @@
          image: centos-7
          disk_size: 10
          external_ip: "{{ external_ip.address }}"
-         metadata : '{ "startup-script" : "{{ startup_script_content }}", "sshKeys":"xjulio:{{ ssh_key_content }}" }'
+         metadata : '{ "startup-script" : "{{ startup_script_content }}", "sshKeys":"ansible:{{ ssh_vars.ssh_key_content }}" }'
          state: present
 
