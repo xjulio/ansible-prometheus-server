@@ -17,3 +17,5 @@ Future udpates will include support to another cloud providers.
 
 - http://prometheus.xjulio.me:9090
 - http://grafana.xjulio.me:3000
+
+For demonstration purpose, currently, prometheus there's no password and grafana server credentials are: user=admin  and password=123456. 
