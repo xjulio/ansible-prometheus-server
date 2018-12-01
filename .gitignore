@@ -7,9 +7,6 @@ target/
 .DS_Store
 .DS_Store/*
 
-keys/ansible_rsa
-keys/ansible_rsa.pub
-
 #
 # Compiled class file
 *.class
