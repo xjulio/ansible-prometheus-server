@@ -11,6 +11,7 @@ Future udpates will include support to another cloud providers.
 - Playbook to install prometheus server into CentOS 7 VM, configuring users, groups, systemd service and initial prometheus configuration. Also the metrics scrapping from SpringBoot application server are inject in prometheus.yml configuration using file_sd_configs to load targets from a json file that contains the FQDN of jetty server.
    * https://github.com/xjulio/ansible-prometheus-server/blob/master/playbooks/install_prometheus.yml
 - Playbook to install and configure grafana server into CentOS VM.
+   * https://github.com/xjulio/ansible-prometheus-server/blob/master/playbooks/install_grafana.yml
 
 ## Service URL
 
