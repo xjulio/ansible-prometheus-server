@@ -1,0 +1,2 @@
+ssh_key_content: "{{ lookup('file', '../keys/ansible_rsa.pub') }}"
+ssh_xjulio_key_content: "{{ lookup('file', '/Users/xjulio/.ssh/id_rsa.pub') }}"

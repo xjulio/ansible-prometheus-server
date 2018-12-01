@@ -1,0 +1,32 @@
+- name: Install Grafana Server
+  hosts: prometheus
+  gather_facts: no
+  connection: ssh
+  become: true
+
+  handlers:
+   - include: ../handlers/main.yml
+
+  tasks:
+   - name: install grafana repo
+     template:
+       src: ../templates/grafana.repo.p2
+       dest: /etc/yum.repos.d/grafana.repo
+       owner: root
+       group: root
+       mode: 0644
+     tags:
+         - repo
+           
+   - name: install grafana
+     yum:
+       name: grafana
+       state: present
+     tags:
+         - install
+         
+   - name: restart grafana
+     become: true
+     systemd:
+       name: grafana-server
+       state: restarted         

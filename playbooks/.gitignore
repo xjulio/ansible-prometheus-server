@@ -1,1 +1,4 @@
 /create_prometheus.retry
+/create_prometheus_vm.retry
+/install_grafana.retry
+/install_prometheus.retry

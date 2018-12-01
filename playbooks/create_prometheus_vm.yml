@@ -17,13 +17,11 @@
      args:
        creates: ../keys/ansible_rsa
        
-   - name: Include vars of stuff.yaml into the 'stuff' variable (2.2).
-     include_vars:
-       file: ../vars/ssh.yml
-       name: ssh_vars
+   - name: Include ssh vars
+     include_vars: ../vars/ssh.yml
     
    - debug:
-        msg: "{{ ssh_vars.ssh_key_content }}"  
+        msg: "{{ ssh_key_content }}"  
    
    - name: create external IP
      gce_eip:
@@ -34,9 +32,25 @@
         region: "{{ region }}"
         state: present
      register: external_ip
-   
+     
    - debug:
        msg: "External IP: {{ external_ip }}"  
+
+   - name: Create Firewall Rule w/Source Range
+     gce_net:
+       service_account_email: "{{ service_email }}"
+       credentials_file: "{{ gcp_cred_file }}"
+       project_id: "{{ gcp_project }}"
+       subnet_region: "{{ region }}"
+       name: default
+       fwname: "prometheus-fw-rule"
+       allowed: tcp:9090,22,3000
+       src_range: ['0.0.0.0/0']
+       target_tags: "prometheus-fw-tag"
+       state: present
+     register: prometheus_net     
+     tags:
+         - firewall
   
    - name: create a instance
      gce:
@@ -49,6 +63,6 @@
          image: centos-7
          disk_size: 10
          external_ip: "{{ external_ip.address }}"
-         metadata : '{ "startup-script" : "{{ startup_script_content }}", "sshKeys":"ansible:{{ ssh_vars.ssh_key_content }}" }'
+         tags: "prometheus-fw-tag"
+         metadata : '{ "startup-script" : "{{ startup_script_content }}", "sshKeys":"ansible:{{ ssh_key_content }}", "sshKeys":"xjulio:{{ ssh_xjulio_key_content }}" }'
          state: present
-

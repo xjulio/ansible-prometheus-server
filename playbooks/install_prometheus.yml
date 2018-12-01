@@ -1,0 +1,147 @@
+- name: Install Prometheus Server
+  hosts: prometheus
+  gather_facts: no
+  connection: ssh
+  become: true
+
+  handlers:
+   - include: ../handlers/main.yml
+
+  tasks:
+   - name: install wget
+     yum:
+       name: wget
+       state: present
+        
+   - name: Include prometheus vars
+     include_vars: ../vars/prometheus.yml
+     tags:
+         - vars
+
+   - name: Include jetty vars
+     include_vars: ../vars/jetty.yml
+     tags:
+         - vars
+
+   - name: create prometheus system group
+     group:
+       name: prometheus
+       system: true
+       state: present
+
+   - name: create prometheus system user
+     user:
+       name: prometheus
+       system: true
+       shell: "/sbin/nologin"
+       group: prometheus
+       createhome: false
+       home: /tmp
+
+   - name: create prometheus data directory
+     file:
+       path: "{{ prometheus_db_dir }}"
+       state: directory
+       owner: prometheus
+       group: prometheus
+       mode: 0755
+    
+   - name: create prometheus configuration directories
+     file:
+       path: "{{ item }}"
+       state: directory
+       owner: root
+       group: prometheus
+       mode: 0750
+     with_items:
+       - "{{ prometheus_config_dir }}"
+       - "{{ prometheus_config_dir }}/conf.d"
+       - "{{ prometheus_config_dir }}/rules"
+       - "{{ prometheus_install_dir }}"
+       
+   - name: download prometheus binary
+     get_url:
+       url: "https://github.com/prometheus/prometheus/releases/download/v2.2.1/prometheus-2.2.1.linux-amd64.tar.gz"
+       dest: "/tmp/prometheus-2.2.1.linux-amd64.tar.gz"
+       
+     register: _download_archive
+     until: _download_archive is succeeded
+     retries: 5
+     delay: 2
+
+   - name: clean prometheus directories
+     file:
+       path: "{{ item }}"
+       state: absent
+     with_items:
+       - /usr/local/prometheus-2.2.1.linux-amd64/
+       - /usr/local/prometheus/
+     tags:
+         - clean
+
+   - name: unpack prometheus binaries
+     unarchive:
+       src: "/tmp/prometheus-2.2.1.linux-amd64.tar.gz"
+       dest: "/usr/local"
+       remote_src: yes
+     tags:
+         - unpack
+
+   - name: check prometheus tmp install dir
+     stat: path=/usr/local/prometheus-2.2.1.linux-amd64/
+     register: prometheus_tmp_stat
+     tags:
+         - unpack
+         - vars
+
+   - name: check prometheus install dir
+     stat: path=/usr/local/prometheus
+     register: prometheus_stat
+     tags:
+         - unpack
+         - vars
+
+   - name: rename prometheus install dir
+     shell: mv /usr/local/prometheus-2.2.1.linux-amd64 /usr/local/prometheus
+     when: prometheus_tmp_stat.stat.exists
+     tags:
+         - unpack
+
+   - name: change prometheus install dir permission
+     shell: chown prometheus.prometheus -R /usr/local/prometheus
+        warn=False
+     when: prometheus_stat.stat.exists
+     tags:
+         - permission
+
+   - name: create prometheus config
+     template:
+       src: ../templates/prometheus.yml.p2
+       dest: "{{ prometheus_config_dir }}/prometheus.yml"
+       owner: prometheus
+       group: prometheus
+       mode: 0644
+     tags:
+         - config_templates
+
+   - name: create prometheus targets config
+     template:
+       src: ../templates/targets.json.j2
+       dest: "{{ prometheus_config_dir }}/conf.d/targets.json"
+       owner: prometheus
+       group: prometheus
+       mode: 0644
+     tags:
+         - config_templates
+
+   - name: create systemd service unit
+     template:
+       src: ../templates/prometheus.service.p2
+       dest: /etc/systemd/system/prometheus.service
+       owner: root
+       group: root
+       mode: 0644
+     notify:
+       - restart prometheus         
+     tags:
+         - config_templates

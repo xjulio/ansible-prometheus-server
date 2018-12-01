@@ -1,0 +1,23 @@
+---
+prometheus_version: 2.5.0
+
+prometheus_config_dir: /etc/prometheus
+prometheus_db_dir: /var/lib/prometheus
+prometheus_install_dir: /usr/local/prometheus
+
+prometheus_web_listen_address: "0.0.0.0:9090"
+prometheus_web_external_url: ''
+
+prometheus_storage_retention: "30d"
+
+prometheus_config_flags_extra: {}
+prometheus_alertmanager_config: []
+prometheus_alert_relabel_configs: []
+prometheus_global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+
+prometheus_remote_write: []
+
+prometheus_remote_read: []

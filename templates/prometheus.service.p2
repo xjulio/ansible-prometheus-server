@@ -1,0 +1,18 @@
+[Unit]
+Description=Prometheus Server
+Documentation=https://prometheus.io/docs/introduction/overview/
+After=network-online.target
+
+[Service]
+User=prometheus
+Restart=on-failure
+
+#Change this line if you download the 
+#Prometheus on different path user
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/prometheus/prometheus \
+  --config.file=/etc/prometheus/prometheus.yml \
+  --storage.tsdb.path=/var/lib//prometheus
+
+[Install]
+WantedBy=multi-user.target
