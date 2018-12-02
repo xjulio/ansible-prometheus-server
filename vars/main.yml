@@ -1,0 +1,9 @@
+ssh_key_content: "{{ lookup('file', '../keys/ansible_rsa.pub') }}"
+ssh_xjulio_key_content: "{{ lookup('file', '/Users/xjulio/.ssh/id_rsa.pub') }}"
+
+gcp_project: mb-demo-224014
+gcp_cred_kind: serviceaccount
+gcp_cred_file: /Users/xjulio/gcloud-cred-ansible.json
+gcp_service_email: "ansible@mb-demo-224014.iam.gserviceaccount.com"
+gcp_zone: "us-central1-a"
+gcp_region: "us-central1"

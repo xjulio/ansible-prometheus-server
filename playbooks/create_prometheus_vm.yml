@@ -3,12 +3,12 @@
   gather_facts: no
   connection: local
   vars:
-      gcp_project: mb-demo-224014
-      gcp_cred_kind: serviceaccount
-      gcp_cred_file: /Users/xjulio/gcloud-cred-ansible.json
-      service_email: "ansible@mb-demo-224014.iam.gserviceaccount.com"
-      zone: "us-central1-a"
-      region: "us-central1"
+      gcp_project: "{{ gcp_project }}"
+      gcp_cred_kind: "{{ gcp_cred_kind }}"
+      gcp_cred_file: "{{ gcp_cred_file }}"
+      service_email: "{{ gcp_service_email }}"
+      zone: "{{ gcp_zone }}"
+      region: "{{ gcp_region }}"
       startup_script_content: "{{ lookup('file', '../scripts/startup_script.sh') }}"
 
   tasks:
@@ -18,7 +18,7 @@
        creates: ../keys/ansible_rsa
        
    - name: Include ssh vars
-     include_vars: ../vars/ssh.yml
+     include_vars: ../vars/main.yml
     
    - debug:
         msg: "{{ ssh_key_content }}"  
